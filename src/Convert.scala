@@ -135,6 +135,10 @@ object Convert extends CaseApp[ConvertOptions] {
             for (p <- os.walk.stream(dirDest) if p != dirDest) {
               val relPath = p.relativeTo(dirDest)
               val ent = new TarArchiveEntry(p.toNIO, relPath.toString)
+              if (!Properties.isWin) {
+                val perms = os.perms(p)
+                ent.setMode(perms.toInt)
+              }
               taos.putArchiveEntry(ent)
               if (os.isFile(p))
                 taos.write(os.read.bytes(p))
@@ -211,10 +215,10 @@ object Convert extends CaseApp[ConvertOptions] {
       }
       .toMap
 
-    val entries = new mutable.ListBuffer[(String, String)]
+    val entries = new mutable.ListBuffer[(String, os.SubPath)]
 
     for (p <- os.walk.stream(distribPath)) {
-      val rel = p.relativeTo(distribPath)
+      val rel = p.relativeTo(distribPath).asSubPath
       if (os.isDir(p))
         os.makeDir(dest / rel)
       else if (rel.last.endsWith(".jar")) {
@@ -231,7 +235,7 @@ object Convert extends CaseApp[ConvertOptions] {
             // Is copyAttributes fine on Windows?
             os.copy(p, dest / rel, copyAttributes = true)
           case Some(url) =>
-            entries += url -> rel.toString
+            entries += url -> rel
         }
       }
       else
@@ -244,7 +248,11 @@ object Convert extends CaseApp[ConvertOptions] {
       case Right(f) => os.Path(f, os.pwd)
     }
 
-    val fetchJarsDir = dest / "fetch-jars"
+    val (destBase, dropHead) = os.list(dest) match {
+      case Seq(dir) if os.isDir(dir) => (dir, true)
+      case _ => (dest, false)
+    }
+    val fetchJarsDir = destBase / "fetch-jars"
     os.makeDir.all(fetchJarsDir)
     os.copy(csSh, fetchJarsDir / "cs.sh")
     if (!Properties.isWin)
@@ -262,14 +270,15 @@ object Convert extends CaseApp[ConvertOptions] {
         |  cp "$(./fetch-jars/cs.sh get "$url")" "$dest"
         |done
         |""".stripMargin.getBytes(StandardCharsets.UTF_8)
-    os.write(dest / "fetch-jars.sh", fetchJarContent, perms = if (Properties.isWin) null else "rwxr-xr-x")
+    os.write(destBase / "fetch-jars.sh", fetchJarContent, perms = if (Properties.isWin) null else "rwxr-xr-x")
 
     def entriesContent =
       entries
         .toList
         .map {
           case (url, dest) =>
-            s"$url->$dest${System.lineSeparator()}"
+            val dest0 = if (dropHead) dest.segments.drop(1).mkString("/") else dest.toString
+            s"$url->$dest0${System.lineSeparator()}"
         }
         .mkString
         .getBytes(StandardCharsets.UTF_8)
