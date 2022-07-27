@@ -75,7 +75,7 @@ object Convert extends CaseApp[ConvertOptions] {
     }
   }
 
-  def csShUrl = "https://github.com/coursier/ci-scripts/raw/51931bc75613eb722fb752b204241c54ac506a24/cs.sh"
+  def csShUrl = "https://github.com/coursier/ci-scripts/raw/dcc000482233f5d4194b11e36573862a869b2fd7/cs.sh"
 
   def run(options: ConvertOptions, args: RemainingArgs): Unit = {
 
@@ -267,6 +267,7 @@ object Convert extends CaseApp[ConvertOptions] {
         |cat fetch-jars/jar-urls | while read entry; do
         |  url="$(echo "$entry" | sed 's/->.*$//')"
         |  dest="$(echo "$entry" | sed 's/^.*->//')"
+        |  echo "Getting $dest from $url" 1>&2
         |  cp "$(./fetch-jars/cs.sh get "$url")" "$dest"
         |done
         |""".stripMargin.getBytes(StandardCharsets.UTF_8)
