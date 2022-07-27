@@ -75,7 +75,7 @@ object Convert extends CaseApp[ConvertOptions] {
     }
   }
 
-  def csShUrl = "https://github.com/coursier/ci-scripts/raw/master/cs.sh"
+  def csShUrl = "https://github.com/coursier/ci-scripts/raw/51931bc75613eb722fb752b204241c54ac506a24/cs.sh"
 
   def run(options: ConvertOptions, args: RemainingArgs): Unit = {
 
@@ -243,7 +243,7 @@ object Convert extends CaseApp[ConvertOptions] {
         os.copy(p, dest / rel, copyAttributes = true)
     }
 
-    val csSh = FileCache().file(Artifact(csShUrl).withChanging(true)).run.unsafeRun()(FileCache().ec) match {
+    val csSh = FileCache().file(Artifact(csShUrl)).run.unsafeRun()(FileCache().ec) match {
       case Left(e) => throw new Exception(e)
       case Right(f) => os.Path(f, os.pwd)
     }
