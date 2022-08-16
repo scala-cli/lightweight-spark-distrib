@@ -2,7 +2,7 @@
 
 *lightweight-spark-distrib* is a small application allowing to make Spark distributions more
 lightweight. From an existing Spark distribution, *lightweight-spark-distrib* looks for the
-JARs it contains and tries to find those on Maven Central. It then all files but the JARs
+JARs it contains and tries to find those on Maven Central. It then copies all files but the JARs
 it found on Maven Central to a new directory, and writes alongside them a script that
 relies on [coursier](https://github.com/coursier/coursier) to fetch the missing JARs.
 
