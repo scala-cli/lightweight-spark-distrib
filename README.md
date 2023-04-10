@@ -24,3 +24,14 @@ $ scala-cli run \
       --scala 2.12.10 \
       --archive
 ```
+
+## Using a lightweight archive
+
+Run the `fetch-jars.sh` script right before use. This script downloads missing JARs using [coursier](https://github.com/coursier/coursier). It downloads coursier on its own if needed.
+
+```bash
+$ curl -fLo spark-distrib.tar.gz https://github.com/scala-cli/lightweight-spark-distrib/releases/download/v0.0.4/spark-2.4.2-bin-hadoop2.7-scala2.12.tgz
+$ tar -zxf spark-distrib.tar.gz
+$ cd spark-2.4.2-bin-hadoop2.7
+$ ./fetch-jars.sh
+```
